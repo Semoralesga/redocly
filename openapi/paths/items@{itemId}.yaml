@@ -1,0 +1,31 @@
+get:
+  tags:
+    - Items
+  summary: Encontrar un item por `id`
+  description: Retorna un único ítem
+  operationId: fetchItemByCode()
+  parameters:
+    - in: path
+      name: itemId
+      description: '`id` del ítem a retornar'
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Operación exitosa
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: ../components/schemas/ItemRequest.yaml
+    default:
+      description: |
+        **404**: No se encontró el ítem\
+        **500**: Error en el servidor
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/JSONAPIErrorResponse.yaml

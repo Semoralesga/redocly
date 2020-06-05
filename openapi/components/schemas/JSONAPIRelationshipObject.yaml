@@ -1,0 +1,57 @@
+title: 'JSON:API Relationship Object'
+description: >
+  This schema can be used when defining `relationships` objects within a
+  JSON:API resource object.
+
+
+  The value of the relationships key MUST be an object (a “relationships
+  object”). Members of the relationships object (“relationships”) represent
+  references from the resource object in which it’s defined to other resource
+  objects.
+
+
+  Relationships may be to-one or to-many.
+type: object
+oneOf:
+  - type: object
+    description: links object
+    properties:
+      links:
+        $ref: ./JSONAPILinksObject.yaml
+  - type: object
+    description: >
+      Resource linkage in a compound document allows a client to link together
+      all of the included resource objects without having to GET any URLs via
+      links.
+
+
+      Resource linkage MUST be represented as one of the following:
+
+      * null for empty to-one relationships.
+
+      * an empty array ([]) for empty to-many relationships.
+
+      * a single resource identifier object for non-empty to-one relationships.
+
+      * an array of resource identifier objects for non-empty to-many
+      relationships.
+    properties:
+      data:
+        oneOf:
+          - type: string
+            description: null indicates an empty to-one relationship
+            default: 'null'
+          - type: array
+            description: >-
+              an empty array indicates an empty to-many relationship; an array
+              with objects indicates a non-empty to-many relationship
+            items:
+              $ref: ./JSONAPIResourceIdentifierObject.yaml
+          - $ref: ./JSONAPIResourceIdentifierObject.yaml
+  - type: object
+    description: >-
+      a meta object that contains non-standard meta-information about the
+      relationship
+    properties:
+      meta:
+        type: object

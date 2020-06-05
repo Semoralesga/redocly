@@ -1,0 +1,30 @@
+get:
+  tags:
+    - Monedas
+  summary: Encontrar las monedas disponibles
+  description: Retorna una lista de monedas
+  operationId: fetchCurrencies
+  responses:
+    '200':
+      description: Operación exitosa
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  allOf:
+                    - $ref: ../components/schemas/JSONAPIResourceObject.yaml
+                  properties:
+                    attributes:
+                      $ref: ../components/schemas/Currency.yaml
+    default:
+      description: |
+        **404**: No se encontraron monedas\
+        **500**: Error en el servidor
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/JSONAPIErrorResponse.yaml

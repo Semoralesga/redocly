@@ -1,0 +1,30 @@
+get:
+  tags:
+    - Instituciones
+  summary: Encontrar una institución por `id`
+  description: Retorna una única institución
+  parameters:
+    - name: institutionId
+      in: path
+      description: ID de la institución
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Operación exitosa
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: ../components/schemas/InstitutionResponse.yaml
+    default:
+      description: |
+        **404**: No se encontró la institución\
+        **500**: Error en el servidor
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/JSONAPIErrorResponse.yaml

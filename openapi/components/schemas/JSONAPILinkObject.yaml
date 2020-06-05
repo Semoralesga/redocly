@@ -1,0 +1,13 @@
+title: 'JSON:API Link Object'
+description: a structured representation of a URL
+type: object
+required:
+  - href
+properties:
+  href:
+    type: string
+    example: 'https://example.com/'
+  meta:
+    type: object
+    example:
+      count: '10'

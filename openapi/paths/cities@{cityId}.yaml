@@ -1,0 +1,31 @@
+get:
+  tags:
+    - Ciudades
+  summary: Encontrar una ciudad por `id`
+  description: Retorna una única ciudad
+  operationId: fetchCityFromId
+  parameters:
+    - in: path
+      name: cityId
+      description: '`id` de la ciudad'
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Operación exitosa
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: ../components/schemas/City.yaml
+    default:
+      description: |
+        **404**: No se encontró la ciudad\
+        **500**: Error en el servidor
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/JSONAPIErrorResponse.yaml

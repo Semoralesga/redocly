@@ -1,0 +1,27 @@
+type: object
+allOf:
+  - $ref: ./JSONAPIResourceObject.yaml
+properties:
+  attributes:
+    type: object
+    properties:
+      code:
+        type: string
+        description: >-
+          Código de la ciudad (usualmente otorgado por alguna entidad de su
+          país)
+      countryIsoId:
+        type: string
+        description: '`id` numérico otorgado por ISO al país'
+      countryName:
+        type: string
+        description: Nombre del país
+      name:
+        type: string
+        description: Nombre de la ciudad
+      subdivisionId:
+        type: string
+        description: '`id` de la subdivisión política a la que pertenece la ciudad'
+      subdivisionName:
+        type: string
+        description: Nombre de la subdivisión política a la que pertenece la ciudad

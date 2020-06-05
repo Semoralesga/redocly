@@ -1,0 +1,26 @@
+title: 'JSON:API Resource Identifier Object'
+description: >
+  A JSON:API-compliant resource identifier object. An inheritable object schema
+  that contains the basic framework of a Resource Identifier Object from the
+  JSON:API spec.
+
+
+  A “resource identifier object” is an object that identifies an individual
+  resource.
+
+
+  A “resource identifier object” MUST contain `type` and `id` members.
+
+
+  A “resource identifier object” MAY also include a `meta` member, whose value
+  is a meta object that contains non-standard meta-information. If necessary,
+  the `meta` property should be added by the inheriting schema.
+type: object
+required:
+  - type
+  - id
+properties:
+  type:
+    $ref: ./JSONAPIType.yaml
+  id:
+    $ref: ./JSONAPIId.yaml

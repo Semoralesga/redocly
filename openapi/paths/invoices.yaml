@@ -1,0 +1,41 @@
+post:
+  tags:
+    - Facturas
+  summary: Crear una factura nueva
+  description: Retorna el `id` de la factura creada y un enlace a su ubicación
+  operationId: sendRequestToInvoiceGenerator
+  requestBody:
+    description: Información de la factura que será creada
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            data:
+              $ref: ../components/schemas/InvoiceRequest.yaml
+    required: true
+  responses:
+    '202':
+      description: >-
+        La solicitud fue aceptada y la factura será procesada. El header
+        `Location` contiene la ubicación de la factura
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: ../components/schemas/JSONAPIResourceIdentifierObject.yaml
+      headers:
+        Location:
+          schema:
+            type: string
+          description: Ubicación de la factura
+    default:
+      description: |
+        **400**: Solicitud inválida\
+        **500**: Error en el servidor
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/JSONAPIErrorResponse.yaml

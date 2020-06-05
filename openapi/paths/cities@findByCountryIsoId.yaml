@@ -1,0 +1,40 @@
+get:
+  tags:
+    - Ciudades
+  summary: Encontrar ciudades por el ID numérico ISO del país
+  description: Retorna un arreglo con las ciudades del país indicado
+  operationId: fetchCitiesByCountryIsoId
+  parameters:
+    - in: query
+      name: isoId
+      description: Código ISO del país
+      required: true
+      schema:
+        type: string
+    - in: query
+      name: nameIncludes
+      description: Texto incluido en el nombre
+      required: false
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Operación exitosa
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: ../components/schemas/City.yaml
+    default:
+      description: |
+        **400**: Solicitud inválida: `isoId` es requerido\
+        **404**: No se encontraron ciudades\
+        **500**: Error en el servidor
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/JSONAPIErrorResponse.yaml

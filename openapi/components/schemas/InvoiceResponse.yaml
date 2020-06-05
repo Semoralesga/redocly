@@ -1,0 +1,141 @@
+type: object
+properties:
+  data:
+    allOf:
+      - $ref: ./JSONAPIResourceObject.yaml
+      - type: object
+        properties:
+          attributes:
+            type: object
+            properties:
+              acceptanceDate:
+                type: integer
+                format: int64
+                description: ''
+              acceptanceType:
+                type: integer
+                format: int32
+                description: ''
+              accepted:
+                type: boolean
+                description: ''
+              acknowledgementDate:
+                type: integer
+                format: int64
+                description: ''
+              bestBidRate:
+                type: number
+                format: double
+                description: ''
+              bidderKey:
+                type: string
+                description: ''
+              completedByHolder:
+                type: boolean
+                description: ''
+              completedByHolderDate:
+                type: integer
+                format: int64
+                description: ''
+              completedByPayer:
+                type: boolean
+                description: ''
+              completedByPayerDate:
+                type: integer
+                format: int64
+                description: ''
+              cufe:
+                type: string
+                description: ''
+              currencyCode:
+                type: string
+                description: ''
+              expirationDate:
+                type: integer
+                format: int64
+                description: ''
+              grossValue:
+                type: number
+                format: double
+                description: ''
+              holderKey:
+                type: string
+                description: ''
+              holderName:
+                type: string
+                description: ''
+              holderNit:
+                type: string
+                description: ''
+              invoiceNumber:
+                type: string
+                description: Número de la factura
+              issueDate:
+                type: integer
+                format: int64
+                description: ''
+              issuerKey:
+                type: string
+                description: ''
+              issuerName:
+                type: string
+                description: ''
+              netPayableValue:
+                type: number
+                format: double
+                description: ''
+              otherDiscounts:
+                type: number
+                format: double
+                description: ''
+              payerKey:
+                type: string
+                description: ''
+              payerName:
+                type: string
+                description: ''
+              paymentType:
+                type: integer
+                format: int32
+                description: ''
+              registrationDate:
+                type: integer
+                format: int64
+                description: ''
+              reserveSellRate:
+                type: number
+                format: double
+                description: ''
+              sellRate:
+                type: number
+                format: double
+                description: ''
+              softwareProviderKey:
+                type: string
+                description: ''
+              status:
+                type: integer
+                format: int32
+                description: ''
+              taxDiscounts:
+                type: number
+                format: double
+                description: ''
+              taxValue:
+                type: number
+                format: double
+                description: ''
+              type:
+                type: integer
+                format: int32
+                description: ''
+              uploadDate:
+                type: integer
+                format: int64
+                description: ''
+              uploaderInstitutionKey:
+                type: string
+                description: ''
+              uploaderUserKey:
+                type: string
+                description: ''

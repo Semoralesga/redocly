@@ -1,0 +1,38 @@
+type: object
+required:
+  - address
+  - cityId
+  - email
+  - idNumber
+  - idType
+  - lastname
+  - name
+properties:
+  address:
+    type: string
+    description: Dirección física
+  cityId:
+    type: string
+    description: '`id` de la ciudad (obtenido a través del API)'
+  email:
+    type: string
+    description: Correo electrónico
+  idNumber:
+    type: string
+    description: >-
+      Número de identificación oficial. El dígito de verificación es opcional,
+      si se incluye debe ir serparado por un guión
+  idType:
+    type: integer
+    format: int32
+    description: '`id` del tipo de identificación (obtenido a través del API)'
+  lastname:
+    type: string
+    description: Apellidos
+  name:
+    type: string
+    description: Nombres
+  rut:
+    type: string
+    format: binary
+    description: Regristro Único Tributario (RUT). **Debe ser un archivo PDF**

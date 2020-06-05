@@ -1,0 +1,18 @@
+title: 'JSON:API Resource Object'
+description: >
+  A JSON:API-compliant resource object. An inheritable object schema that
+  contains the basic framework of a Resource Object from the JSON:API spec.
+
+
+  The `attributes`, `relationship`, and `meta` properties are added, as
+  necessary, by the inheriting schema.
+type: object
+required:
+  - type
+properties:
+  type:
+    $ref: ./JSONAPIType.yaml
+  id:
+    $ref: ./JSONAPIId.yaml
+  links:
+    $ref: ./JSONAPILinksObject.yaml

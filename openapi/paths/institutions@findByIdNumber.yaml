@@ -1,0 +1,33 @@
+get:
+  tags:
+    - Instituciones
+  summary: Encontrar instituciones por el número de identificación oficial
+  description: Retorna un arreglo de una o más instituciones
+  parameters:
+    - in: query
+      name: idNumber
+      description: Número de identificación oficial de la institución
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Operación exitosa
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: ../components/schemas/InstitutionResponse.yaml
+    default:
+      description: |
+        **400**: Solicitud inválida: `idNumber` es requerido\
+        **404**: No se encontraron instituciones\
+        **500**: Error en el servidor
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/JSONAPIErrorResponse.yaml

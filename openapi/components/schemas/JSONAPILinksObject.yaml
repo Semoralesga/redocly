@@ -1,0 +1,15 @@
+title: 'JSON:API Links Object'
+description: 'May contain `self`, `related`, or pagination links (first, last, prev, next).'
+properties:
+  self:
+    $ref: ./JSONAPILink.yaml
+  related:
+    $ref: ./JSONAPILink.yaml
+  first:
+    $ref: ./JSONAPILink.yaml
+  last:
+    $ref: ./JSONAPILink.yaml
+  prev:
+    $ref: ./JSONAPILink.yaml
+  next:
+    $ref: ./JSONAPILink.yaml

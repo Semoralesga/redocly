@@ -1,0 +1,30 @@
+get:
+  tags:
+    - Impuestos
+  summary: Encontrar los impuestos aplicables a los ítems
+  description: Retorna una lista de impuestos
+  operationId: fetchItemTaxes
+  responses:
+    '200':
+      description: Operación exitosa
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  allOf:
+                    - $ref: ../components/schemas/JSONAPIResourceObject.yaml
+                  properties:
+                    attributes:
+                      $ref: ../components/schemas/Tax.yaml
+    default:
+      description: |
+        **404**: No se encontraron impuestos\
+        **500**: Error en el servidor
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/JSONAPIErrorResponse.yaml

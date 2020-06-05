@@ -1,0 +1,69 @@
+type: object
+allOf:
+  - $ref: ./JSONAPIResourceObject.yaml
+properties:
+  attributes:
+    type: object
+    required:
+      - credit
+      - currency
+      - expiration
+      - issueDate
+      - issuerId
+      - items
+      - payerId
+      - usePayerAddress
+    properties:
+      credit:
+        type: boolean
+        description: 'Factura de crédito: `true` si es de cŕedito,  `false` si es de contado'
+      currency:
+        type: string
+        description: Moneda base de la factura (Obtenida a través del API)
+      expiration:
+        type: integer
+        format: int64
+        description: Fecha de vencimiento de la factura
+      issueDate:
+        type: integer
+        format: int64
+        description: Fecha de emisión de la factura
+      issuerId:
+        type: string
+        description: '`id` del emisor'
+      items:
+        type: array
+        description: Arreglo con los ítems que serán facturados
+        items:
+          type: object
+          required:
+            - id
+            - unitaryValue
+            - quantity
+          properties:
+            id:
+              type: string
+              description: '`id` del ítem'
+            unitaryValue:
+              type: number
+              format: double
+              description: Valor unitario del ítem
+            quantity:
+              type: integer
+              format: int32
+              description: Cantidad de ítems facturados
+      payerId:
+        type: string
+        description: '`id` del pagador de la factura (cliente)'
+      usePayerAddress:
+        type: boolean
+        description: Usar la dirección del pagador. **Siempre** es `true`
+      providerId:
+        type: string
+        description: '`id` del proveedor (si factura por mandato)'
+      purchaseOrder:
+        type: string
+        description: Orden de compra
+      observations:
+        type: string
+        description: Observaciones adicionales a la factura

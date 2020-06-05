@@ -1,0 +1,5 @@
+title: 'JSON:API Link'
+description: 'A JSON:API link can be either a URL string or a structured link object.'
+oneOf:
+  - $ref: ./URL.yaml
+  - $ref: ./JSONAPILinkObject.yaml
