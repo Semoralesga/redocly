@@ -1,4 +1,5 @@
 {
+  "homepage": "https://semoralesga.github.io/redocly/",
   "name": "billy-invoicing-api",
   "version": "1.0.0",
   "dependencies": {
@@ -6,8 +7,13 @@
   },
   "private": true,
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d docs -r https://github.com/Semoralesga/redocly.git",
     "start": "openapi preview-docs",
     "build": "openapi bundle -o dist",
     "test": "openapi validate"
+  },
+  "devDependencies": {
+    "gh-pages": "^3.0.0"
   }
 }

@@ -1,0 +1,1246 @@
+openapi: 3.0.0
+info:
+  title: "Billy Invoicing API"
+  description: "API de facturación de Billy"
+  version: 0.1.0 Beta
+
+servers:
+  - url: https://us-central1-invoice-3c998.cloudfunctions.net/v1
+    description: "Development"
+  - url: https://us-central1-apollo-preproduction.cloudfunctions.net/v1
+    description: "Staging"
+  - url: https://api.billy.com.co/
+    description: "Servidor de Billy"
+
+#TODO: solve items/constants issue
+#TODO: make clear that payer persons are created as institutions
+#TODO: check if empty collections ([]) are returned as [] and are a 404
+
+paths:
+  /invoices:
+    post:
+      tags:
+        - Facturas xD
+      summary: "Crear una factura nueva"
+      description: "Retorna el `id` de la factura creada y un enlace a su ubicación"
+      operationId: sendRequestToInvoiceGenerator
+      requestBody:
+        description: "Información de la factura que será creada"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/InvoiceRequest"
+        required: true
+      responses:
+        "202":
+          description: "La solicitud fue aceptada y la factura será procesada. El header `Location` contiene la ubicación de la factura"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/JSONAPIResourceIdentifierObject"
+          headers:
+            Location:
+              schema:
+                type: string
+              description: "Ubicación de la factura"
+        default:
+          description: |
+            **400**: Solicitud inválida\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /invoices/{invoiceId}:
+    get:
+      tags:
+        - Facturas
+      summary: "Encontrar una factura por `id`"
+      description: "Retorna una única factura"
+      operationId: fetchInvoice
+      parameters:
+        - in: path
+          name: invoiceId
+          description: "`id` de la factura a retornar"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceResponse"
+        "202":
+          description: "La factura se está procesando"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    allOf:
+                      - $ref: "#/components/schemas/JSONAPIResourceIdentifierObject"
+                    properties:
+                      attributes:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+        default:
+          description: |
+            **404**: No se encontró la factura\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /payers/institutions:
+    post:
+      tags:
+        - Pagadores
+      summary: "Crear un cliente (o pagador) persona jurídica"
+      description: "Retorna el `id` de la institución creada"
+      operationId: createInstitution
+      requestBody:
+        description: "Información de la institución"
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/InstitutionRequest"
+        required: true
+      responses:
+        "200":
+          description: "La institución fue creada con éxito"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIResourceIdentifierObject"
+        default:
+          description: |
+            **400**: Solicitud inválida\
+            **415**: Tipo de archivo no soportado\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /payers/persons:
+    post:
+      tags:
+        - Pagadores
+      summary: "Crear un cliente (o pagador) persona natural"
+      description: "Retorna el `id` de la persona creada"
+      operationId: createPerson
+      requestBody:
+        description: "Información de la persona"
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/PersonRequest"
+        required: true
+      responses:
+        "200":
+          description: "La persona fue creada con éxito"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIResourceIdentifierObject"
+        default:
+          description: |
+            **400**: Solicitud inválida\
+            **415**: Tipo de archivo no soportado\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /institutions/findByIdNumber:
+    get:
+      tags:
+        - Instituciones
+      summary: "Encontrar instituciones por el número de identificación oficial"
+      description: "Retorna un arreglo de una o más instituciones"
+      parameters:
+        - in: query
+          name: idNumber
+          description: "Número de identificación oficial de la institución"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/InstitutionResponse"
+        default:
+          description: |
+            **400**: Solicitud inválida: `idNumber` es requerido\
+            **404**: No se encontraron instituciones\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /institutions/{institutionId}:
+    get:
+      tags:
+        - Instituciones
+      summary: "Encontrar una institución por `id`"
+      description: "Retorna una única institución"
+      parameters:
+        - name: institutionId
+          in: path
+          description: "ID de la institución"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/InstitutionResponse"
+        default:
+          description: |
+            **404**: No se encontró la institución\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /items:
+    post:
+      tags:
+        - Items
+      summary: "Crear un ítem nuevo"
+      description: "Retorna el `id` del ítem creado"
+      operationId: createItem
+      requestBody:
+        description: "Información del ítem"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/ItemRequest"
+        required: true
+      responses:
+        "200":
+          description: "El ítem fue creado con éxito"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIResourceIdentifierObject"
+        default:
+          description: |
+            **400**: Solicitud inválida\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+    get:
+      tags:
+        - Items
+      summary: "Encontrar los items de la institución"
+      description: "Retorna un arreglo con los ítems de la institución"
+      operationId: fetchItems
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ItemRequest"
+        default:
+          description: |
+            **404**: No se encontraron ítems\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /items/{itemId}:
+    get:
+      tags:
+        - Items
+      summary: "Encontrar un item por `id`"
+      description: "Retorna un único ítem"
+      operationId: fetchItemByCode()
+      parameters:
+        - in: path
+          name: itemId
+          description: "`id` del ítem a retornar"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ItemRequest"
+        default:
+          description: |
+            **404**: No se encontró el ítem\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /items/types:
+    get:
+      tags:
+        - Items
+      summary: "Encontrar los tipos de ítem disponibles"
+      description: "Retorna una lista de tipos de item"
+      operationId: fetchItemTypes
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/JSONAPIResourceObject"
+                      properties:
+                        attributes:
+                          type: object
+                          properties:
+                            description:
+                              type: string
+        default:
+          description: |
+            **404**: No se encontraron los tipos de ítem\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /items/units:
+    get:
+      tags:
+        - Items
+      summary: "Encontrar las unidades de los ítems"
+      description: "Retorna una lista de unidades de los ítems"
+      operationId: fetchItemUnits
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/JSONAPIResourceObject"
+                      properties:
+                        attributes:
+                          type: object
+                          properties:
+                            description:
+                              type: string
+        default:
+          description: |
+            **404**: No se encontraron unidades para los ítems\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /users/{userId}:
+    get:
+      tags:
+        - Usuarios
+      summary: "Encontrar un usuario por `id`"
+      description: "Retorna un único usuario"
+      operationId: fetchUserById
+      parameters:
+        - in: path
+          name: userId
+          description: "`id` del usuario a retornar"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/User"
+        default:
+          description: |
+            **404**: No se encontró el usuario\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /cities/findByCountryIsoId:
+    get:
+      tags:
+        - Ciudades
+      summary: "Encontrar ciudades por el ID numérico ISO del país"
+      description: "Retorna un arreglo con las ciudades del país indicado"
+      operationId: fetchCitiesByCountryIsoId
+      parameters:
+        - in: query
+          name: isoId
+          description: "Código ISO del país"
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: nameIncludes
+          description: "Texto incluido en el nombre"
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/City"
+        default:
+          description: |
+            **400**: Solicitud inválida: `isoId` es requerido\
+            **404**: No se encontraron ciudades\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /cities/{cityId}:
+    get:
+      tags:
+        - Ciudades
+      summary: "Encontrar una ciudad por `id`"
+      description: "Retorna una única ciudad"
+      operationId: fetchCityFromId
+      parameters:
+        - in: path
+          name: cityId
+          description: "`id` de la ciudad"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/City"
+        default:
+          description: |
+            **404**: No se encontró la ciudad\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /taxes:
+    get:
+      tags:
+        - Impuestos
+      summary: "Encontrar los impuestos aplicables a los ítems"
+      description: "Retorna una lista de impuestos"
+      operationId: fetchItemTaxes
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/JSONAPIResourceObject"
+                      properties:
+                        attributes:
+                          $ref: "#/components/schemas/Tax"
+        default:
+          description: |
+            **404**: No se encontraron impuestos\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+  /currencies:
+    get:
+      tags:
+        - Monedas
+      summary: "Encontrar las monedas disponibles"
+      description: "Retorna una lista de monedas"
+      operationId: fetchCurrencies
+      responses:
+        "200":
+          description: "Operación exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/JSONAPIResourceObject"
+                      properties:
+                        attributes:
+                          $ref: "#/components/schemas/Currency"
+        default:
+          description: |
+            **404**: No se encontraron monedas\
+            **500**: Error en el servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorResponse"
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    City:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/JSONAPIResourceObject"
+      properties:
+        attributes:
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Código de la ciudad (usualmente otorgado por alguna entidad de su país)"
+            countryIsoId:
+              type: string
+              description: "`id` numérico otorgado por ISO al país"
+            countryName:
+              type: string
+              description: "Nombre del país"
+            name:
+              type: string
+              description: "Nombre de la ciudad"
+            subdivisionId:
+              type: string
+              description: "`id` de la subdivisión política a la que pertenece la ciudad"
+            subdivisionName:
+              type: string
+              description: "Nombre de la subdivisión política a la que pertenece la ciudad"
+
+    Currency:
+      type: object
+      properties:
+        ccy:
+          type: string
+          description: "Código alfabético"
+        ccyMnrUnts:
+          type: integer
+          format: int32
+          description: "Unidad menor (decimales)"
+        ccyNbr:
+          type: string
+          description: "Código numérico"
+        ccyNm:
+          type: string
+          description: "Nombre de la moneda"
+        symbol:
+          type: string
+          description: "Símbolo de la moneda"
+
+    InvoiceRequest:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/JSONAPIResourceObject"
+      properties:
+        attributes:
+          type: object
+          required:
+            - credit
+            - currency
+            - expiration
+            - issueDate
+            - issuerId
+            - items
+            - payerId
+            - usePayerAddress
+          properties:
+            credit:
+              type: boolean
+              description: "Factura de crédito: `true` si es de cŕedito,  `false` si es de contado"
+            currency:
+              type: string
+              description: "Moneda base de la factura (Obtenida a través del API)"
+            expiration:
+              type: integer
+              format: int64
+              description: "Fecha de vencimiento de la factura"
+            issueDate:
+              type: integer
+              format: int64
+              description: "Fecha de emisión de la factura"
+            issuerId:
+              type: string
+              description: "`id` del emisor"
+            items:
+              type: array
+              description: "Arreglo con los ítems que serán facturados"
+              items:
+                type: object
+                required:
+                  - id
+                  - unitaryValue
+                  - quantity
+                properties:
+                  id:
+                    type: string
+                    description: "`id` del ítem"
+                  unitaryValue:
+                    type: number
+                    format: double
+                    description: "Valor unitario del ítem"
+                  quantity:
+                    type: integer
+                    format: int32
+                    description: "Cantidad de ítems facturados"
+            payerId:
+              type: string
+              description: "`id` del pagador de la factura (cliente)"
+            usePayerAddress:
+              type: boolean
+              description: "Usar la dirección del pagador. **Siempre** es `true`"
+            providerId:
+              type: string
+              description: "`id` del proveedor (si factura por mandato)"
+            purchaseOrder:
+              type: string
+              description: "Orden de compra"
+            observations:
+              type: string
+              description: "Observaciones adicionales a la factura"
+
+    InvoiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+            - $ref: "#/components/schemas/JSONAPIResourceObject"
+            - type: object
+              properties:
+                attributes:
+                  type: object
+                  properties:
+                    acceptanceDate:
+                      type: integer
+                      format: int64
+                      description: ""
+                    acceptanceType:
+                      type: integer
+                      format: int32
+                      description: ""
+                    accepted:
+                      type: boolean
+                      description: ""
+                    acknowledgementDate:
+                      type: integer
+                      format: int64
+                      description: ""
+                    bestBidRate:
+                      type: number
+                      format: double
+                      description: ""
+                    bidderKey:
+                      type: string
+                      description: ""
+                    completedByHolder:
+                      type: boolean
+                      description: ""
+                    completedByHolderDate:
+                      type: integer
+                      format: int64
+                      description: ""
+                    completedByPayer:
+                      type: boolean
+                      description: ""
+                    completedByPayerDate:
+                      type: integer
+                      format: int64
+                      description: ""
+                    cufe:
+                      type: string
+                      description: ""
+                    currencyCode:
+                      type: string
+                      description: ""
+                    expirationDate:
+                      type: integer
+                      format: int64
+                      description: ""
+                    grossValue:
+                      type: number
+                      format: double
+                      description: ""
+                    holderKey:
+                      type: string
+                      description: ""
+                    holderName:
+                      type: string
+                      description: ""
+                    holderNit:
+                      type: string
+                      description: ""
+                    invoiceNumber:
+                      type: string
+                      description: "Número de la factura"
+                    issueDate:
+                      type: integer
+                      format: int64
+                      description: ""
+                    issuerKey:
+                      type: string
+                      description: ""
+                    issuerName:
+                      type: string
+                      description: ""
+                    netPayableValue:
+                      type: number
+                      format: double
+                      description: ""
+                    otherDiscounts:
+                      type: number
+                      format: double
+                      description: ""
+                    payerKey:
+                      type: string
+                      description: ""
+                    payerName:
+                      type: string
+                      description: ""
+                    paymentType:
+                      type: integer
+                      format: int32
+                      description: ""
+                    registrationDate:
+                      type: integer
+                      format: int64
+                      description: ""
+                    reserveSellRate:
+                      type: number
+                      format: double
+                      description: ""
+                    sellRate:
+                      type: number
+                      format: double
+                      description: ""
+                    softwareProviderKey:
+                      type: string
+                      description: ""
+                    status:
+                      type: integer
+                      format: int32
+                      description: ""
+                    taxDiscounts:
+                      type: number
+                      format: double
+                      description: ""
+                    taxValue:
+                      type: number
+                      format: double
+                      description: ""
+                    type:
+                      type: integer
+                      format: int32
+                      description: ""
+                    uploadDate:
+                      type: integer
+                      format: int64
+                      description: ""
+                    uploaderInstitutionKey:
+                      type: string
+                      description: ""
+                    uploaderUserKey:
+                      type: string
+                      description: ""
+
+    InstitutionResponse:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/JSONAPIResourceObject"
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                address:
+                  type: string
+                  description: "Dirección física"
+                cityId:
+                  type: string
+                  description: "`id` de la ciudad (obtenido a través del API). Sólo se permite una oficina por ciudad"
+                headquarter:
+                  type: boolean
+                  description: "Sede principal: `true` si es la sede principal, `false` si es una sucursal"
+                idNumber:
+                  type: string
+                  description: "Número de identificación oficial"
+                idType:
+                  type: integer
+                  description: "`id` del tipo de identificación (Obtenida a través del API)"
+                name:
+                  type: string
+                  description: "Razón social"
+                mnemonic:
+                  type: string
+                  description: "Nemotécnico de la institución"
+
+    InstitutionRequest:
+      type: object
+      required:
+        - address
+        - cityId
+        - email
+        - headquarter
+        - idNumber
+        - idType
+        - name
+        - phone
+        - rut
+      properties:
+        address:
+          type: string
+          description: "Dirección física"
+        cityId:
+          type: string
+          description: "ID de la ciudad (obtenido a través del API). Sólo se permite úna oficina por ciudad."
+        email:
+          type: string
+          description: "Correo electrónico"
+        headquarter:
+          type: boolean
+          description: "Sede principal (`true` si es la sede principal, `false` si es una sucursal)"
+        idNumber:
+          type: string
+          description: "Número de identificación oficial con el dígito de verificación separado por un guión"
+        idType:
+          type: integer
+          format: int32
+          description: "`id` del tipo de identificación (Obtenida a través del API)"
+        name:
+          type: string
+          description: "Razón social"
+        phone:
+          type: string
+          description: "Teléfono fijo o móvil"
+        rut:
+          type: string
+          format: binary
+          description: "Regristro Único Tributario (RUT). **Debe ser un archivo PDF**"
+        commerce:
+          type: string
+          format: binary
+          description: "Certificado de cámara y comercio. **Debe ser un archivo PDF**"
+        description:
+          type: string
+          description: "Descripción de la actividad de la institución"
+        website:
+          type: string
+          description: "Sitio web"
+
+    ItemRequest:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/JSONAPIResourceObject"
+      properties:
+        attributes:
+          type: object
+          properties:
+            description:
+              type: string
+              description: "Descripción del ítem"
+            taxesIds:
+              type: array
+              description: "`id`s de los impuestos que aplican al ítem (Obtenidos a través del API)"
+              items:
+                type: string
+            typeId:
+              type: string
+              description: "`id` del tipo de ítem (Obtenido a través del API)"
+            unitaryValue:
+              type: number
+              format: double
+              description: "Valor unitario del ítem"
+            unitId:
+              type: string
+              description: "`id` de la unidad del ítem (Obtenido a través del API)"
+            created:
+              type: integer
+              format: int64
+              description: "Estampa de tiempo (milisegundos) con la fecha de creación del ítem"
+
+    PersonRequest:
+      type: object
+      required:
+        - address
+        - cityId
+        - email
+        - idNumber
+        - idType
+        - lastname
+        - name
+      properties:
+        address:
+          type: string
+          description: "Dirección física"
+        cityId:
+          type: string
+          description: "`id` de la ciudad (obtenido a través del API)"
+        email:
+          type: string
+          description: "Correo electrónico"
+        idNumber:
+          type: string
+          description: "Número de identificación oficial. El dígito de verificación es opcional, si se incluye debe ir serparado por un guión"
+        idType:
+          type: integer
+          format: int32
+          description: "`id` del tipo de identificación (obtenido a través del API)"
+        lastname:
+          type: string
+          description: "Apellidos"
+        name:
+          type: string
+          description: "Nombres"
+
+        rut:
+          type: string
+          format: binary
+          description: "Regristro Único Tributario (RUT). **Debe ser un archivo PDF**"
+
+    Tax:
+      type: object
+      properties:
+        #id:
+        #  type: string
+        #  description: "`id` del impuesto"
+        code:
+          type: string
+          description: "código del impuesto otorgado por la DIAN"
+        name:
+          type: string
+          description: "Nombre largo"
+        short:
+          type: string
+          description: "Nombre corto (sigla)"
+        type:
+          type: integer
+          format: int32
+          description: "Tipo de impuesto"
+        value:
+          type: number
+          format: double
+          description: "Valor del impuesto"
+
+    User:
+      type: object
+      properties:
+        attributes:
+          type: object
+          properties:
+            email:
+              type: string
+              description: "Correo electrónico del usuario"
+            idNumber:
+              type: string
+              description: "Número de identificación oficial"
+            idType:
+              type: string
+              description: "`id` del Tipo de identificación (Obtenido a través del API)"
+            institutionId:
+              type: string
+              description: "`id` de la institución del usuario"
+            lastname:
+              type: string
+              description: "Apellidos"
+            name:
+              type: string
+              description: "Nombres"
+
+    #####################
+
+    JSONAPIObject:
+      description: Includes the current JSON:API version for this specification as well as optional meta information
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          default: "1.0"
+          example: "1.0"
+        meta:
+          type: object
+
+    JSONAPIResourceIdentifierObject:
+      title: JSON:API Resource Identifier Object
+      description: |
+        A JSON:API-compliant resource identifier object. An inheritable object schema that contains the basic framework of a Resource Identifier Object from the JSON:API spec.
+
+        A “resource identifier object” is an object that identifies an individual resource.
+
+        A “resource identifier object” MUST contain `type` and `id` members.
+
+        A “resource identifier object” MAY also include a `meta` member, whose value is a meta object that contains non-standard meta-information. If necessary, the `meta` property should be added by the inheriting schema.
+      type: object
+      required:
+        - type
+        - id
+      properties:
+        type:
+          $ref: "#/components/schemas/JSONAPIType"
+        id:
+          $ref: "#/components/schemas/JSONAPIId"
+
+    JSONAPIResourceObject:
+      title: JSON:API Resource Object
+      description: |
+        A JSON:API-compliant resource object. An inheritable object schema that contains the basic framework of a Resource Object from the JSON:API spec.
+
+        The `attributes`, `relationship`, and `meta` properties are added, as necessary, by the inheriting schema.
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          $ref: "#/components/schemas/JSONAPIType"
+        id:
+          $ref: "#/components/schemas/JSONAPIId"
+        links:
+          $ref: "#/components/schemas/JSONAPILinksObject"
+
+    JSONAPIType:
+      title: JSON:API type Member
+      description: |
+        The `type` member is used to describe resource objects that share common attributes and relationships.
+
+        Note: The type member is required in every resource object throughout requests and responses in JSON:API. There are some cases, such as when POSTing to an endpoint representing heterogeneous data, when the type could not be inferred from the endpoint. However, picking and choosing when it is required would be confusing; it would be hard to remember when it was required and when it was not. Therefore, to improve consistency and minimize confusion, type is always required.
+      type: string
+
+    JSONAPIId:
+      title: JSON:API id Member
+      description: Every resource object MUST contain an id member and a type member (exception-the id member is not required when the resource object originates at the client and represents a new resource to be created on the server). Within a given API, each resource object’s type and id pair MUST identify a single, unique resource.
+      type: string
+
+    JSONAPILinksObject:
+      title: JSON:API Links Object
+      description: May contain `self`, `related`, or pagination links (first, last, prev, next).
+      properties:
+        self:
+          $ref: "#/components/schemas/JSONAPILink"
+        related:
+          $ref: "#/components/schemas/JSONAPILink"
+        first:
+          $ref: "#/components/schemas/JSONAPILink"
+        last:
+          $ref: "#/components/schemas/JSONAPILink"
+        prev:
+          $ref: "#/components/schemas/JSONAPILink"
+        next:
+          $ref: "#/components/schemas/JSONAPILink"
+
+    JSONAPILink:
+      title: JSON:API Link
+      description: A JSON:API link can be either a URL string or a structured link object.
+      oneOf:
+        - $ref: "#/components/schemas/URL"
+        - $ref: "#/components/schemas/JSONAPILinkObject"
+
+    URL:
+      type: string
+      format: url
+      example: "https://example.com/"
+
+    JSONAPILinkObject:
+      title: JSON:API Link Object
+      description: a structured representation of a URL
+      type: object
+      required:
+        - href
+      properties:
+        href:
+          type: string
+          example: "https://example.com/"
+        meta:
+          type: object
+          example:
+            count: "10"
+
+    JSONAPIRelationshipObject:
+      title: JSON:API Relationship Object
+      description: |
+        This schema can be used when defining `relationships` objects within a JSON:API resource object.
+
+        The value of the relationships key MUST be an object (a “relationships object”). Members of the relationships object (“relationships”) represent references from the resource object in which it’s defined to other resource objects.
+
+        Relationships may be to-one or to-many.
+      type: object
+      oneOf:
+        - type: object
+          description: links object
+          properties:
+            links:
+              $ref: "#/components/schemas/JSONAPILinksObject"
+        - type: object
+          description: |
+            Resource linkage in a compound document allows a client to link together all of the included resource objects without having to GET any URLs via links.
+
+            Resource linkage MUST be represented as one of the following:
+            * null for empty to-one relationships.
+            * an empty array ([]) for empty to-many relationships.
+            * a single resource identifier object for non-empty to-one relationships.
+            * an array of resource identifier objects for non-empty to-many relationships.
+          properties:
+            data:
+              oneOf:
+                - type: string
+                  description: null indicates an empty to-one relationship
+                  default: "null"
+                - type: array
+                  description: an empty array indicates an empty to-many relationship; an array with objects indicates a non-empty to-many relationship
+                  items:
+                    $ref: "#/components/schemas/JSONAPIResourceIdentifierObject"
+                - $ref: "#/components/schemas/JSONAPIResourceIdentifierObject"
+        - type: object
+          description: a meta object that contains non-standard meta-information about the relationship
+          properties:
+            meta:
+              type: object
+
+    JSONAPIErrorResponse:
+      title: JSON:API Error Response
+      description: A JSON:API-compliant error response. This object is inherited by the specific response type.
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          description: An array of Error objects
+          type: array
+          minItems: 1
+          items:
+            description: A JSON:API-compliant error object. According to the JSON:API, none of the properties are required. For our purposes, we have made status and title required.
+            type: object
+            required:
+              - status
+              - title
+            properties:
+              id:
+                description: a unique identifier for this particular occurrence of the problem
+                type: string
+                format: uuid
+              links:
+                description: a link to further details about this particular occurrence of the problem
+                type: object
+                properties:
+                  about:
+                    $ref: "#/components/schemas/JSONAPILink"
+              status:
+                description: the HTTP status code applicable to this problem
+                type: string
+                minLength: 3
+                maxLength: 3
+              code:
+                description: an application-specific error code
+                type: string
+              title:
+                description: a short, human-readable summary of the problem that SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization
+                type: string
+              detail:
+                description: a human-readable explanation specific to this occurrence of the problem. Like title, this field’s value can be localized
+                type: string
+              source:
+                description: contains references to the source of the error
+                type: object
+                properties:
+                  pointer:
+                    description: a JSON Pointer [RFC6901] to the associated entity in the request document
+                    type: string
+                  parameter:
+                    description: indicates which URI query parameter caused the error
+                    type: string
+              meta:
+                description: a JSON meta object with non-standard meta-information about the error
+                type: object
+                additionalProperties: true

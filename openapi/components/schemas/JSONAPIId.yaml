@@ -1,8 +1,0 @@
-title: 'JSON:API id Member'
-description: >-
-  Every resource object MUST contain an id member and a type member
-  (exception-the id member is not required when the resource object originates
-  at the client and represents a new resource to be created on the server).
-  Within a given API, each resource object’s type and id pair MUST identify a
-  single, unique resource.
-type: string
